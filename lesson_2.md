@@ -246,9 +246,194 @@ LIMIT 20
 ```
 
 ### Question 11:
+
+```
+
+SELECT 
+    ps_partkey,
+    sum(ps_availqty * ps_supplycost) as part_value
+FROM partsupp as ps 
+JOIN supplier as s on ps.ps_suppkey = s.s_suppkey
+JOIN nation as n on n.n_nationkey = s.s_nationkey
+WHERE n_name = 'GERMANY'
+
+GROUP BY ps_partkey 
+HAVING sum(ps_availqty * ps_supplycost) > (
+    SELECT 
+        sum(ps_availqty * ps_supplycost) * 0.0001
+    FROM partsupp as pss 
+    JOIN supplier as ss on pss.ps_suppkey = ss.s_suppkey
+    JOIN nation as ns on ns.n_nationkey = ss.s_nationkey
+    WHERE ns.n_name = 'GERMANY'
+
+)
+ORDER BY part_value DESC
+LIMIT 10
+
+            
+
+```
+
 ### Question 12:
+
+```
+
+SELECT 
+    l_shipmode,
+    SUM(CASE 
+        WHEN o_orderpriority = '1-URGENT' or o_orderpriority = '2-HIGH'
+        THEN 1
+        ELSE 0
+        END) as high_line,
+    SUM(CASE 
+        WHEN o_orderpriority != '1-URGENT' and o_orderpriority != '2-HIGH'
+        THEN 1
+        ELSE 0
+        END) as low_line
+FROM lineitem as l
+JOIN orders as o on o.o_orderkey = l.l_orderkey
+WHERE l_receiptdate > l_commitdate
+    and l_shipdate < l_commitdate
+    and l_shipmode in ('MAIL','SHIP')
+    and l_receiptdate >= date('1994-01-01')
+    and l_receiptdate < date('1994-01-01', '+1 year')
+
+GROUP BY l_shipmode
+
+```
 ### Question 13:
+
+```
+SELECT 
+c_count,
+count(*) as c_dist
+FROM (
+    SELECT 
+    c_custkey,
+    count(o_orderkey) as c_count
+    FROM customer as c
+    LEFT OUTER JOIN orders as o on o.o_custkey = c.c_custkey and o.o_comment not like '%special%requests%'
+    GROUP BY c_custkey
+)
+GROUP BY c_count
+ORDER BY c_count DESC,
+c_dist DESC
+```
+
 ### Question 14:
+```
+SELECT 
+100 * SUM(
+    CASE 
+    WHEN p_type like 'PROMO%'
+    THEN l_extendedprice * (1 - l_discount)
+    ELSE 0
+    END) / SUM(l_extendedprice * (1 - l_discount)) as promo_revenue
+FROM lineitem as l 
+JOIN part as p on p.p_partkey = l.l_partkey
+WHERE l_shipdate > date('1995-09-01')
+    and l_shipdate <= date('1995-09-01', '+1 month')
+```
+
 ### Question 15:
+
+```
+
+WITH revenue AS (
+SELECT 
+    l_suppkey as supplier_no,
+    sum(l_extendedprice * (1 - l_discount)) as total_revenue
+FROM lineitem 
+WHERE l_shipdate > date('1996-01-01')
+    and l_shipdate <= date('1996-01-01', '+3 month')
+GROUP BY l_suppkey
+)
+
+SELECT 
+    s_suppkey,
+    s_name,
+    s_address,
+    total_revenue
+FROM supplier as s
+JOIN revenue as r on r.supplier_no = s.s_suppkey
+WHERE total_revenue = (
+    SELECT MAX(total_revenue)
+    FROM revenue
+)
+ORDER BY s_suppkey
+```
 ### Question 16:
+
+```
+SELECT 
+    p_brand,
+    p_type,
+    p_size,
+    count(distinct ps_suppkey) as supplier_cnt
+FROM partsupp as ps
+JOIN part as p on p.p_partkey = ps.ps_partkey
+WHERE p_size IN (49, 14, 23,45, 19, 3, 36, 9)
+    and p_brand <> 'BRAND#45'
+    and p_type not like 'MEDIUM POLISHED%'
+    and ps_suppkey not in (
+        SELECT s_suppkey
+        FROM supplier
+        WHERE s_comment like '%Customer%Complaints%'
+    )
+GROUP BY 
+    p_brand,
+    p_type,
+    p_size
+ORDER BY 
+    supplier_cnt DESC, 
+    p_brand,
+    p_type,
+    p_size
+```
 ### Question 17:
+```
+
+SELECT 
+    sum(l_extendedprice) / 7.0 as avg_yearly
+FROM lineitem as l
+JOIN part as p on p.p_partkey = l.l_partkey
+WHERE p_brand = 'Brand#23'
+    and p_container = 'MED BOX'
+    and l_quantity < (
+        SELECT 
+            0.2 * avg(l_quantity)
+        FROM lineitem
+        WHERE
+            l_partkey = p_partkey
+    )
+
+
+```
+
+### Question 18
+
+```
+SELECT 
+    c_custkey,
+    c_name,
+    o_orderkey,
+    o_orderdate,
+    o_totalprice,
+    SUM(l_quantity) as qty
+FROM orders as o
+JOIN customer as c on c.c_custkey = o.o_custkey
+JOIN lineitem as l on l.l_orderkey = o.o_orderkey
+GROUP BY c_custkey,
+    c_name,
+    o_orderkey,
+    o_orderdate,
+    o_totalprice
+HAVING qty > 300
+ORDER BY o_totalprice, o_orderdate
+LIMIT 100 
+```
+
+### Question 19
+### Question 20
+### Question 21
+### Question 22
