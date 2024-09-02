@@ -11,6 +11,6 @@ So my plan, for now is:
 
 1. Learn about data engineering on a daily basis. (All the time)
 2. Finish the current data engineering 101 course. (until 14.09.2024)
-    3.1 Look for the companies that can share their knowledge or provide an online internship for free. (until 01.10.2024)
+    3.1 Look for the companies that can share their knowledge or provide an online internship for free. (until 01.10.2024)  
     3.2 In the meantime, practice my DSA skills.
 4. This part will depend on if I will be able to find such company. So I will either study in that company or work on my personal portfolio.
